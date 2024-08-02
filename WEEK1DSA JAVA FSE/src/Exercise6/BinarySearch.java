@@ -1,0 +1,32 @@
+package Exercise6;
+
+import java.util.Arrays;
+
+public class BinarySearch {
+	 public static Book binarySearchByTitle(Book[] books, String title) {
+	        int left = 0;
+	        int right = books.length - 1;
+
+	        while (left <= right) {
+	            int mid = left + (right - left) / 2;
+
+	            int compareResult = books[mid].getTitle().compareToIgnoreCase(title);
+
+	            if (compareResult == 0) {
+	                return books[mid];
+	            }
+
+	            if (compareResult < 0) {
+	                left = mid + 1;
+	            } else {
+	                right = mid - 1;
+	            }
+	        }
+	        return null; // Book not found
+	    }
+
+	    // Helper method to sort books by title
+	    public static void sortBooksByTitle(Book[] books) {
+	        Arrays.sort(books, (b1, b2) -> b1.getTitle().compareToIgnoreCase(b2.getTitle()));
+}
+}

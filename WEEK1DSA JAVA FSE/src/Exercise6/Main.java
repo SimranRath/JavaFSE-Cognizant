@@ -1,0 +1,26 @@
+package Exercise6;
+
+public class Main {
+	 public static void main(String[] args) {
+	 Book[] books = {
+	            new Book(3, "The Catcher in the Rye", "J.D. Salinger"),
+	            new Book(1, "To Kill a Mockingbird", "Harper Lee"),
+	            new Book(4, "1984", "George Orwell"),
+	            new Book(2, "The Great Gatsby", "F. Scott Fitzgerald")
+	        };
+
+	        // Linear Search
+	        System.out.println("Linear Search:");
+	        
+	        Book foundBook = LinearSearch.linearSearchByTitle(books, "1984");
+	        System.out.println(foundBook != null ? foundBook : "Book not found");
+
+	        // Sorting the array for Binary Search
+	        BinarySearch.sortBooksByTitle(books);
+
+	        // Binary Search
+	        System.out.println("\nBinary Search:");
+	        foundBook = BinarySearch.binarySearchByTitle(books, "1984");
+	        System.out.println(foundBook != null ? foundBook : "Book not found");
+	    }
+}

@@ -1,0 +1,26 @@
+package exercise2;
+
+
+	public class WordDocumentFactory extends DocumentFactory {
+	    @Override
+	    public Document createDocument(String name) {
+	        return new WordDocument(name);
+	    }
+	}
+
+	// PdfDocumentFactory.java
+	public class PdfDocumentFactory extends DocumentFactory {
+	    @Override
+	    public Document createDocument(String name) {
+	        return new PdfDocument(name);
+	    }
+	}
+
+	// ExcelDocumentFactory.java
+	public class ExcelDocumentFactory extends DocumentFactory {
+	    @Override
+	    public Document createDocument(String name) {
+	        return new ExcelDocument(name);
+	    }
+	}
+

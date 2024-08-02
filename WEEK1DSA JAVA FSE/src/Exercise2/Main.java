@@ -1,0 +1,27 @@
+package Exercise2;
+
+public class Main {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		 product[] products = {
+		            new product(3, "Laptop", "Electronics"),
+		            new product(1, "Smartphone", "Electronics"),
+		            new product(4, "Tablet", "Electronics"),
+		            new product(2, "Headphones", "Accessories")
+		        };
+
+		        // Linear Search
+		        System.out.println("Linear Search:");
+		        product foundProduct = linearSearch.LinearSearch(products, 2);
+		        System.out.println(foundProduct != null ? foundProduct : "Product not found");
+
+		        // Sorting the array for Binary Search
+		        BinarySearch.sortProducts(products);
+
+		        // Binary Search
+		        System.out.println("\nBinary Search:");
+		        foundProduct = BinarySearch.binarySearch(products, 2);
+		        System.out.println(foundProduct != null ? foundProduct : "Product not found");
+	}
+}

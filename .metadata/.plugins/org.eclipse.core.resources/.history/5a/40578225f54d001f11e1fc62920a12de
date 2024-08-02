@@ -1,0 +1,38 @@
+package Exercise7;
+
+	import java.util.HashMap;
+	import java.util.Map;
+
+	public class FinancialForecasting {
+
+	    private static Map<Integer, Double> memo = new HashMap<>();
+
+	    // Recursive method to calculate future value with memoization
+	    public static double calculateFutureValue(double presentValue, double growthRate, int years) {
+	        // Check if result is already cached
+	        if (memo.containsKey(years)) {
+	            return memo.get(years);
+	        }
+
+	        // Base case: if years is 0, return present value
+	        if (years == 0) {
+	            return presentValue;
+	        } else {
+	            // Recursive case: calculate future value for next year
+	            double futureValue = presentValue * (1 + growthRate);
+	            double result = calculateFutureValue(futureValue, growthRate, years - 1);
+	            memo.put(years, result); // cache the result
+	            return result;
+	        }
+	    }
+
+	    public static void main(String[] args) {
+	        double presentValue = 1000; // initial investment
+	        double growthRate = 0.05; // 5% growth rate
+	        int years = 5; // forecast for 5 years
+
+	        double futureValue = calculateFutureValue(presentValue, growthRate, years);
+	        System.out.println("Future value after " + years + " years: " + futureValue);
+	    }
+	}
+

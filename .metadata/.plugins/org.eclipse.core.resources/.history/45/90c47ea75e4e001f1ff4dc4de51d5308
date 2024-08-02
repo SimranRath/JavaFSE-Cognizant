@@ -1,0 +1,67 @@
+package exercise2;
+
+	public class WordDocument extends Document {
+	    public WordDocument(String name) {
+	        super(name);
+	    }
+
+	    @Override
+	    public void open() {
+	        System.out.println("Opening Word document: " + getName());
+	    }
+
+	    @Override
+	    public void save() {
+	        System.out.println("Saving Word document: " + getName());
+	    }
+
+	    @Override
+	    public void close() {
+	        System.out.println("Closing Word document: " + getName());
+	    }
+	}
+
+	// PdfDocument.java
+	public class PdfDocument extends Document {
+	    public PdfDocument(String name) {
+	        super(name);
+	    }
+
+	    @Override
+	    public void open() {
+	        System.out.println("Opening PDF document: " + getName());
+	    }
+
+	    @Override
+	    public void save() {
+	        System.out.println("Saving PDF document: " + getName());
+	    }
+
+	    @Override
+	    public void close() {
+	        System.out.println("Closing PDF document: " + getName());
+	    }
+	}
+
+	// ExcelDocument.java
+	public class ExcelDocument extends Document {
+	    public ExcelDocument(String name) {
+	        super(name);
+	    }
+
+	    @Override
+	    public void open() {
+	        System.out.println("Opening Excel document: " + getName());
+	    }
+
+	    @Override
+	    public void save() {
+	        System.out.println("Saving Excel document: " + getName());
+	    }
+
+	    @Override
+	    public void close() {
+	        System.out.println("Closing Excel document: " + getName());
+	    }
+	}
+
