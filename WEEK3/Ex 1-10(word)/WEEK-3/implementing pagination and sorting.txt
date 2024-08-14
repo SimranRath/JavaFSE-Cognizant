@@ -1,0 +1,86 @@
+1. Define Your Employee Model:
+
+First, define your Employee model in SQLAlchemy:
+
+python
+Copy code
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///employees.db'
+db = SQLAlchemy(app)
+
+class Employee(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    salary = db.Column(db.Float, nullable=False)
+
+# Initialize the database
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+
+2. Implement Pagination and Sorting in the Endpoint:
+
+Now, create an endpoint that supports both pagination and sorting:
+
+python
+Copy code
+@app.route('/employees', methods=['GET'])
+def get_employees():
+    # Get query parameters for pagination and sorting
+    page = int(request.args.get('page', 1))  # Default to page 1
+    per_page = int(request.args.get('per_page', 10))  # Default to 10 items per page
+    sort_by = request.args.get('sort_by', 'id')  # Default sort by id
+    sort_order = request.args.get('sort_order', 'asc')  # Default sort order ascending
+    
+    # Ensure valid sort order
+    if sort_order not in ['asc', 'desc']:
+        return jsonify({'error': 'Invalid sort_order'}), 400
+    
+    # Build sorting logic
+    if sort_order == 'asc':
+        sort_column = getattr(Employee, sort_by)
+    else:
+        sort_column = getattr(Employee, sort_by).desc()
+    
+    # Query the database
+    employees_query = Employee.query.order_by(sort_column)
+    employees = employees_query.paginate(page, per_page, False)
+    
+    # Prepare response
+    result = {
+        'total': employees.total,
+        'pages': employees.pages,
+        'current_page': employees.page,
+        'per_page': employees.per_page,
+        'employees': [{
+            'id': emp.id,
+            'name': emp.name,
+            'department': emp.department,
+            'salary': emp.salary
+        } for emp in employees.items]
+    }
+    
+    return jsonify(result)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+3. Explanation:
+
+Pagination: The paginate() method provided by SQLAlchemy is used here. It takes the current page number, the number of items per page, and whether or not to include total pages.
+Sorting: Based on the sort_by and sort_order parameters, the sorting logic is applied. The getattr() function is used to dynamically access the model’s attributes for sorting.
+Error Handling: Basic validation is added to ensure valid sort orders.
+
+
+4. Testing the Endpoint:
+
+You can test the endpoint by running the Flask application and accessing the /employees route with query parameters for pagination and sorting. For example:
+
+List Employees: GET /employees?page=1&per_page=10
+Sort by Salary in Descending Order: GET /employees?page=1&per_page=10&sort_by=salary&sort_order=desc

@@ -1,0 +1,104 @@
+1. Spring Boot Auto-Configurations:
+
+Spring Boot simplifies data source configuration using auto-configuration. It automatically configures the data source based on properties defined in application.properties or application.yml.
+
+1.1. Basic Data Source Configuration
+To start, you need a basic Spring Boot setup with a single data source. Here’s an example of how to configure a single data source in application.properties:
+
+properties
+Copy code
+# src/main/resources/application.properties
+
+# Database URL
+spring.datasource.url=jdbc:mysql://localhost:3306/yourdatabase
+spring.datasource.username=root
+spring.datasource.password=password
+
+# Hibernate settings
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+This configuration sets up a MySQL database connection. Spring Boot’s auto-configuration will create a DataSource bean automatically.
+
+
+
+2. Externalizing Configuration:
+
+To manage multiple data sources, you need to externalize the configuration and define multiple DataSource beans. Here’s how you can do it:
+
+2.1. Define Configuration Properties
+Add configurations for multiple data sources in application.properties or application.yml. For example, using application.properties:
+
+properties
+Copy code
+# Primary Data Source
+spring.datasource.primary.url=jdbc:mysql://localhost:3306/primarydb
+spring.datasource.primary.username=root
+spring.datasource.primary.password=password
+
+# Secondary Data Source
+spring.datasource.secondary.url=jdbc:mysql://localhost:3306/secondarydb
+spring.datasource.secondary.username=root
+spring.datasource.secondary.password=password
+
+
+
+2.2. Create Configuration Classes:
+
+Define DataSource beans and EntityManagerFactory beans for each data source. You also need to configure TransactionManager for each.
+
+Here’s an example of how to configure multiple data sources in Spring Boot:
+
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.sql.DataSource;
+import java.util.Properties;
+
+@Configuration
+@EnableJpaRepositories(
+    basePackages = "com.example.primary.repository",
+    entityManagerFactoryRef = "primaryEntityManagerFactory",
+    transactionManagerRef = "primaryTransactionManager"
+)
+public class PrimaryDataSourceConfig {
+
+    @Bean(name = "primaryDataSource")
+    public DataSource dataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/primarydb");
+        dataSource.setUsername("root");
+        dataSource.setPassword("password");
+        return dataSource;
+    }
+
+    @Bean(name = "primaryEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(
+            @Qualifier("primaryDataSource") DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
+        emf.setDataSource(dataSource);
+        emf.setPackagesToScan("com.example.primary.entity");
+        emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+
+        Properties props = new Properties();
+        props.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+        emf.setJpaProperties(props);
+
+        return emf;
+    }
+
+    @Bean(name = "primaryTransactionManager")
+    public PlatformTransactionManager transactionManager(
+            @Qualifier("primaryEntityManagerFactory") LocalContainerEntityManagerFactoryBean emf) {
+        return new JpaTransactionManager(emf.getObject());
+    }
+}

@@ -1,0 +1,65 @@
+1. Define Your Models with Auditing Fields:
+
+First, let's extend your existing Employee model to include auditing fields. We'll also define a Department model for completeness.
+
+python
+Copy code
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import event
+from sqlalchemy.orm import validates
+from datetime import datetime
+import inspect
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///employees.db'
+db = SQLAlchemy(app)
+
+# Create a base class to include common columns
+class Base(db.Model):
+    __abstract__ = True
+    
+    created_by = db.Column(db.String(100), nullable=False)
+    last_modified_by = db.Column(db.String(100), nullable=True)
+    created_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    last_modified_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+# Employee model with auditing fields
+class Employee(Base):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    department = db.Column(db.String(100), nullable=False)
+    salary = db.Column(db.Float, nullable=False)
+
+# Department model with auditing fields
+class Department(Base):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+
+# Initialize the database
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+
+2. Configure Auditing Using SQLAlchemy Event Listeners:
+
+To automatically populate the created_by and last_modified_by fields, you need to handle SQLAlchemy events. For simplicity, we'll use flask-login for user identification, assuming you have user management already in place. If not, you can modify the code to fit your user management solution.
+
+python
+Copy code
+from flask_login import current_user
+
+# Event listener to set created_by and last_modified_by fields
+@event.listens_for(Employee, 'before_insert')
+@event.listens_for(Department, 'before_insert')
+def before_insert(mapper, connection, target):
+    if current_user.is_authenticated:
+        target.created_by = current_user.username
+        target.last_modified_by = current_user.username
+
+@event.listens_for(Employee, 'before_update')
+@event.listens_for(Department, 'before_update')
+def before_update(mapper, connection, target):
+    if current_user.is_authenticated:
+        target.last_modified_by = current_user.username

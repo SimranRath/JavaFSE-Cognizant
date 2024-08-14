@@ -1,0 +1,271 @@
+1. Creating a Spring Boot Project:
+
+      Using Command Line (Spring CLI):
+
+  1.Install Spring CLI (if not already installed):
+ 
+          sdk install springboot
+
+  2.Generate the Project:
+
+        spring init --dependencies=web,data-jpa,h2,lombok --build=maven employee-management-system
+
+
+
+2. Configuring Application Properties:
+
+
+Open the application.properties File:
+
+This file is located in src/main/resources.
+Add the Configuration for H2 Database:
+
+Update application.properties with the following properties:
+properties
+Copy code
+# Data Source Configuration for H2
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=password
+
+# JPA Configuration
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+
+# H2 Console Configuration (optional, for testing via browser)
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+Project Structure and Code Example
+Create Entity Classes:
+
+Employee.java:
+
+java
+Copy code
+package com.example.employeemanagement.model;
+
+import lombok.Data;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Data
+@Entity
+public class Employee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String position;
+    private Double salary;
+}
+Department.java:
+
+java
+Copy code
+package com.example.employeemanagement.model;
+
+import lombok.Data;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Data
+@Entity
+public class Department {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String location;
+}
+Create Repository Interfaces:
+
+EmployeeRepository.java:
+
+java
+Copy code
+package com.example.employeemanagement.repository;
+
+import com.example.employeemanagement.model.Employee;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+}
+DepartmentRepository.java:
+
+java
+Copy code
+package com.example.employeemanagement.repository;
+
+import com.example.employeemanagement.model.Department;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface DepartmentRepository extends JpaRepository<Department, Long> {
+}
+Create Service Classes:
+
+EmployeeService.java:
+
+java
+Copy code
+package com.example.employeemanagement.service;
+
+import com.example.employeemanagement.model.Employee;
+import com.example.employeemanagement.repository.EmployeeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class EmployeeService {
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    public List<Employee> getAllEmployees() {
+        return employeeRepository.findAll();
+    }
+
+    public Employee saveEmployee(Employee employee) {
+        return employeeRepository.save(employee);
+    }
+
+    public Employee getEmployeeById(Long id) {
+        return employeeRepository.findById(id).orElse(null);
+    }
+
+    public void deleteEmployee(Long id) {
+        employeeRepository.deleteById(id);
+    }
+}
+DepartmentService.java:
+
+java
+Copy code
+package com.example.employeemanagement.service;
+
+import com.example.employeemanagement.model.Department;
+import com.example.employeemanagement.repository.DepartmentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class DepartmentService {
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    public List<Department> getAllDepartments() {
+        return departmentRepository.findAll();
+    }
+
+    public Department saveDepartment(Department department) {
+        return departmentRepository.save(department);
+    }
+
+    public Department getDepartmentById(Long id) {
+        return departmentRepository.findById(id).orElse(null);
+    }
+
+    public void deleteDepartment(Long id) {
+        departmentRepository.deleteById(id);
+    }
+}
+Create Controller Classes:
+
+EmployeeController.java:
+
+java
+Copy code
+package com.example.employeemanagement.controller;
+
+import com.example.employeemanagement.model.Employee;
+import com.example.employeemanagement.service.EmployeeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/employees")
+public class EmployeeController {
+    @Autowired
+    private EmployeeService employeeService;
+
+    @GetMapping
+    public List<Employee> getAllEmployees() {
+        return employeeService.getAllEmployees();
+    }
+
+    @PostMapping
+    public Employee createEmployee(@RequestBody Employee employee) {
+        return employeeService.saveEmployee(employee);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
+        Employee employee = employeeService.getEmployeeById(id);
+        if (employee != null) {
+            return ResponseEntity.ok(employee);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+        employeeService.deleteEmployee(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+DepartmentController.java:
+
+java
+Copy code
+package com.example.employeemanagement.controller;
+
+import com.example.employeemanagement.model.Department;
+import com.example.employeemanagement.service.DepartmentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/departments")
+public class DepartmentController {
+    @Autowired
+    private DepartmentService departmentService;
+
+    @GetMapping
+    public List<Department> getAllDepartments() {
+        return departmentService.getAllDepartments();
+    }
+
+    @PostMapping
+    public Department createDepartment(@RequestBody Department department) {
+        return departmentService.saveDepartment(department);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Department> getDepartmentById(@PathVariable Long id) {
+        Department department = departmentService.getDepartmentById(id);
+        if (department != null) {
+            return ResponseEntity.ok(department);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDepartment(@PathVariable Long id) {
+        departmentService.deleteDepartment(id);
+        return ResponseEntity.noContent().build();
+    }
+}

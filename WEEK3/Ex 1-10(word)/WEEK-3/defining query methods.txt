@@ -1,0 +1,148 @@
+1. Defining Query Methods:
+
+1.1. Derived Query Methods
+Spring Data JPA allows you to define custom queries using method names. These methods use keywords and conventions to generate queries based on your entity's properties.
+
+Update EmployeeRepository with Derived Query Methods:
+
+Location: src/main/java/com/example/employeemanagement/repository/EmployeeRepository.java
+java
+Copy code
+package com.example.employeemanagement.repository;
+
+import com.example.employeemanagement.model.Employee;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+    
+
+    List<Employee> findByName(String name);
+
+    Employee findByEmail(String email);
+
+    List<Employee> findByDepartmentId(Long departmentId);
+
+    List<Employee> findByNameContaining(String substring);
+}
+Explanation:
+
+findByName(String name): Finds all employees with the specified name.
+findByEmail(String email): Finds a single employee by their email address.
+findByDepartmentId(Long departmentId): Finds all employees belonging to a specific department.
+findByNameContaining(String substring): Finds all employees whose names contain the specified substring.
+
+
+1.2. Custom Query Methods Using @Query:
+
+For more complex queries, you can use the @Query annotation to define custom JPQL or SQL queries.
+
+Update EmployeeRepository with Custom Queries:
+
+Location: src/main/java/com/example/employeemanagement/repository/EmployeeRepository.java
+java
+Copy code
+package com.example.employeemanagement.repository;
+
+import com.example.employeemanagement.model.Employee;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+    
+
+    @Query("SELECT e FROM Employee e WHERE e.department.name = :departmentName")
+    List<Employee> findByDepartmentName(@Param("departmentName") String departmentName);
+
+    @Query(value = "SELECT * FROM employees WHERE salary > :minSalary", nativeQuery = true)
+    List<Employee> findEmployeesWithSalaryGreaterThan(@Param("minSalary") Double minSalary);
+}
+Explanation:
+
+findByDepartmentName(@Param("departmentName") String departmentName): JPQL query to find employees based on the department name.
+findEmployeesWithSalaryGreaterThan(@Param("minSalary") Double minSalary): Native SQL query to find employees with a salary greater than a specified amount.
+
+
+2. Named Queries:
+
+Named queries are predefined queries that are defined using @NamedQuery and @NamedQueries annotations. These are useful for complex queries that you want to reuse across your application.
+
+2.1. Define Named Queries in the Entity Class
+Update Employee Entity with Named Queries:
+
+Location: src/main/java/com/example/employeemanagement/model/Employee.java
+java
+Copy code
+package com.example.employeemanagement.model;
+
+import lombok.Data;
+import javax.persistence.*;
+
+@Data
+@Entity
+@Table(name = "employees")
+@NamedQueries({
+    @NamedQuery(
+        name = "Employee.findByName",
+        query = "SELECT e FROM Employee e WHERE e.name = :name"
+    ),
+    @NamedQuery(
+        name = "Employee.findByEmail",
+        query = "SELECT e FROM Employee e WHERE e.email = :email"
+    )
+})
+public class Employee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    private String email;
+
+    @ManyToOne
+    private Department department;
+}
+Explanation:
+
+@NamedQuery(name = "Employee.findByName", query = "SELECT e FROM Employee e WHERE e.name = :name"): Defines a named query to find employees by name.
+@NamedQuery(name = "Employee.findByEmail", query = "SELECT e FROM Employee e WHERE e.email = :email"): Defines a named query to find employees by email.
+2.2. Use Named Queries in the Repository
+Update EmployeeRepository to Use Named Queries:
+
+Location: src/main/java/com/example/employeemanagement/repository/EmployeeRepository.java
+java
+Copy code
+package com.example.employeemanagement.repository;
+
+import com.example.employeemanagement.model.Employee;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {
+    
+
+    @Query(name = "Employee.findByName")
+    List<Employee> findByNameNamedQuery(@Param("name") String name);
+
+
+    @Query(name = "Employee.findByEmail")
+    Employee findByEmailNamedQuery(@Param("email") String email);
+}
+Explanation:
+
+findByNameNamedQuery(@Param("name") String name): Uses the named query defined in the Employee entity to find employees by name.
+findByEmailNamedQuery(@Param("email") String email): Uses the named query defined in the Employee entity to find an employee by email.

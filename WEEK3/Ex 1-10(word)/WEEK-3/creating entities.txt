@@ -1,0 +1,83 @@
+1. Creating JPA Entities
+Define Employee Entity
+Fields:
+
+id: Unique identifier for the employee (Primary Key).
+name: Name of the employee.
+email: Email of the employee.
+department: Reference to the department the employee belongs to.
+Entity Definition:
+
+java
+Copy code
+package com.example.employeemanagement.model;
+
+import lombok.Data;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+@Data
+@Entity
+@Table(name = "employees")
+public class Employee {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    private String email;
+
+    @ManyToOne
+    private Department department;  // Many employees can belong to one department
+}
+Define Department Entity
+Fields:
+
+id: Unique identifier for the department (Primary Key).
+name: Name of the department.
+Entity Definition:
+
+java
+Copy code
+package com.example.employeemanagement.model;
+
+import lombok.Data;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import java.util.List;
+
+@Data
+@Entity
+@Table(name = "departments")
+public class Department {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    @OneToMany(mappedBy = "department")
+    private List<Employee> employees;  
+}
+
+
+2. Mapping Entities to Database Tables
+
+
+Annotations Used:
+@Entity: Specifies that the class is an entity and is mapped to a database table.
+@Table: Specifies the table name in the database.
+@Id: Specifies the primary key of the entity.
+@GeneratedValue: Provides the strategy for generating primary key values.
+@ManyToOne: Specifies a many-to-one relationship between entities.
+@OneToMany: Specifies a one-to-many relationship between entities.
+mappedBy: Specifies the field in the child entity that owns the relationship.
